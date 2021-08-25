@@ -23,8 +23,7 @@ struct SOGLBuffer {
 	};
 
 	//-------------------------------------------------------
-	//   этот метод для вызова с числом аргументов = DataSize 
-	// этот метод не вызывается из Add(std::forward<Float>(X) ...);
+	
 	
 	template< int Num, class Tuple >
 	struct SAddTuple : public SAddTuple<Num-1, Tuple> {
@@ -39,7 +38,7 @@ struct SOGLBuffer {
 		SAddTuple( Tuple& tup, std::vector< DataType >& Data, size_t& Size ) {
 		}
 	};
-//  если вызвать Add(X ...) - то ошибка value_type  = tuple< DataType, DataType > , а  tup = tuple< DataType, ... >
+
 	template< class... T >
 	size_t	Add(T ... X) {
 		value_type  tup = std::tie(X ...);
@@ -50,8 +49,7 @@ struct SOGLBuffer {
 	};
 
 	//-------------------------------------------------------
-	//  Вместо функции с переменным числом ааргументов используем передачу vector по ссылке &&
-
+	
 	inline size_t  Add( std::vector< DataType >&& Data ) {
 		auto sz = Data.size();
 		assert(m_iSize + sz < BuffSize);
@@ -97,13 +95,13 @@ class COGLDrawBuffer {
 
 	SOGLMatrix								m_ModelMatrix;
 	Shader*									m_Shader = nullptr;
-	GLuint									m_iVertShAttr = 0;			//  координата вершины
-	GLuint									m_iTexCoordLoc = 0;			//	текстурная координгата
-	GLuint									m_iColorLoc = 0;			//	цвет вершины
-	GLuint									m_iSamplerLoc = 0;			//	номер текстуры
-	GLuint									m_iProjMatrix = 0;			//	матрица преобразования кординат 
-	GLuint									m_iModelMatrix = 0;			//	матрица преобразования кординат 
-	GLuint									m_ibUseTexture = 0;			//  использовать текстуру или нет
+	GLuint									m_iVertShAttr = 0;			
+	GLuint									m_iTexCoordLoc = 0;			
+	GLuint									m_iColorLoc = 0;			
+	GLuint									m_iSamplerLoc = 0;			
+	GLuint									m_iProjMatrix = 0;			
+	GLuint									m_iModelMatrix = 0;			
+	GLuint									m_ibUseTexture = 0;			
 	SOGLMatrix*								m_ProjMatrix = nullptr;
 
 public :
@@ -135,7 +133,7 @@ public :
 	};
 	void SetProjectMatrix(SOGLMatrix*	ProjMatrix) { m_ProjMatrix = ProjMatrix;  };
 	
-	//  добавить тексттурные координаты
+	
 	inline size_t  AddTexture(GLfloat	U, GLfloat	V) {
 		timer_0	tt("Buffer Add");
 		auto tSize = m_vTexture.Add(U, V);
@@ -147,7 +145,7 @@ public :
 		return cSize;
 	};
 	
-	//  вместо предыдущей, закоментированной функции
+	
 	inline size_t  AddTexture(std::vector<GLfloat>&& Data) {
 		timer_0	tt("Buffer Add");
 
@@ -203,10 +201,7 @@ public :
 	void	AddVertices(const GLfloat* Vertises, int VertSize, const GLfloat* Texture, int TexSize, const unsigned int* Indexes, int IndSize, 
 							const SOGLColor& Color) noexcept
 	{
-		/*GLfloat* verOut = new GLfloat[VertSize];
-		for (auto i = 0; i < VertSize; i += VertexDimension)
-			glhVec3TransformCoord(verOut + i, Vertises + i, &m_ModelMatrix);
-		AddVertex(verOut, verOut + VertSize);*/
+		
 		AddVertex(Vertises, Vertises + VertSize);
 		AddTexture(Texture, Texture + TexSize);
 		AddIndex(Indexes, Indexes + IndSize);
@@ -214,7 +209,7 @@ public :
 		//delete[] verOut;
 	}
 #endif
-	//  добавить координаты  вертексов
+	
 	inline size_t  AddVertex(GLfloat X, GLfloat Y) {
 		auto vSize = m_vVertex.Add(X, Y);
 		return vSize;
@@ -231,7 +226,7 @@ public :
 		return vSize;
 	};
 	
-	//  вместо предыдущей, закоментированной функции
+	
 	inline size_t  AddVertex( std::vector<GLfloat>&& Data) {
 		timer_0	tt("Buffer Add");
 
@@ -252,7 +247,7 @@ public :
 		return cSize;
 
 	};
-	//  добавить цвет
+	
 	inline size_t  AddColor(GLfloat R, GLfloat G, GLfloat B) {
 		auto cSize = m_vColor.Add(R, G, B);
 		return cSize;
@@ -272,7 +267,7 @@ public :
 		return  m_vColor.Add(Color.r, Color.g, Color.b, Color.a);
 	};
 
-	//  Вызывать после того как заполнены остальные составляющие ( Vertex , Texture ). Добавляется столько элементов, чтобы размер буфера соответствовал размерам остальных
+	
 	inline size_t  SetColor(GLfloat R, GLfloat G, GLfloat B) {
 		auto count = m_vVertex.Count();
 		size_t cSize;
@@ -312,7 +307,7 @@ public :
 		auto cSize = m_vIndex.Add(Begin, End);
 		return cSize;
 	};
-	//  проверка что размер всех буферов совпадает
+	
 	inline void Check() const noexcept {
 		assert( ( m_vTexture.Count() == m_vVertex.Count() || m_vTexture.Count() == 0 ) && 
 			( m_vVertex.Count() == m_vColor.Count() || m_vColor.Count() == 0) );
@@ -388,10 +383,10 @@ public :
 		if (m_vIndex.Size() == 0)
 			glDrawArrays(Primitive, 0, Count());
 		else {
-			glDrawElements(Primitive,			// режим
-				m_vIndex.Size(),					// количество
-				GL_UNSIGNED_INT,					// тип
-				m_vIndex.GetData()					// смещение в элементном буфере
+			glDrawElements(Primitive,			
+				m_vIndex.Size(),					
+				GL_UNSIGNED_INT,					
+				m_vIndex.GetData()					
 			);
 			auto err = glGetError();
 			if (err)
